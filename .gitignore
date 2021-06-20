@@ -1,0 +1,4 @@
+Face_Detector_ncnn/
+.vscode/
+dlib_models/
+data/SeeTheFullFace/
