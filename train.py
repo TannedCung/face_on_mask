@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser(description='Training')
 parser.add_argument('--training_dataset', '--names-list', nargs='+', default=[])
 parser.add_argument('--network', default='RFB', help='Backbone network mobile0.25 or slim or RFB')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
+parser.add_argument('--batch_size', default=32, type=int, help='Number of samples for one iter')
 parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
 parser.add_argument('--resume_net', default=None, help='resume net for retraining')
@@ -56,7 +57,8 @@ rgb_mean = (104, 117, 123) # bgr order
 num_classes = 3
 img_dim = cfg['image_size']
 num_gpu = cfg['ngpu']
-batch_size = cfg['batch_size']
+# batch_size = cfg['batch_size']
+batch_size = args.batch_size
 max_epoch = cfg['epoch']
 gpu_train = cfg['gpu_train']
 
