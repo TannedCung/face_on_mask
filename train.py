@@ -98,7 +98,7 @@ else:
 cudnn.benchmark = True
 
 optimizer = optim.SGD(net.parameters(), lr=initial_lr, momentum=momentum, weight_decay=weight_decay)
-criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, 3, 0.35, False)
+criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, , 0.35, False)
 
 priorbox = PriorBox(cfg, image_size=(img_dim, img_dim))
 with torch.no_grad():
@@ -127,7 +127,7 @@ def train():
         if iteration % epoch_size == 0:
             # create batch iterator
             batch_iterator = iter(data.DataLoader(dataset, batch_size, shuffle=True, num_workers=num_workers, collate_fn=detection_collate))
-            if (epoch % 10 == 0 and epoch > 0) or (epoch % 5 == 0 and epoch > cfg['decay1']):
+            if (epoch % 1 == 0 and epoch > 0) or (epoch % 5 == 0 and epoch > cfg['decay1']):
                 torch.save(net.state_dict(), save_folder + cfg['name']+ '_epoch_' + str(epoch) + '.pth')
             epoch += 1
 
