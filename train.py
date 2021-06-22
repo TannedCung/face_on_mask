@@ -29,6 +29,7 @@ parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight dec
 parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
 parser.add_argument('--save_folder', default='./weights/', help='Location to save checkpoint models')
 parser.add_argument('--cpu', action='store_true')
+parser.add_argument('--freeze_backbone', action='store_true')
 parser.add_argument('--load_from_pretrained', action='store_true')
 
 args = parser.parse_args()
@@ -105,8 +106,17 @@ with torch.no_grad():
     priors = priorbox.forward()
     priors = priors.to(device)
 
+def freeze_backbone(net):
+    for i, child in enumerate(net.children()):
+        if i in range(5):
+            for p in child.parameters():
+                p.require_grad = False
+                p.requires_grad = False
+
 def train():
     net.train()
+    if args.freeze_backbone:
+        freeze_backbone(net)
     epoch = 0 + args.resume_epoch
     print('Loading Dataset...')
 
