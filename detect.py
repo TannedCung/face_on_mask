@@ -96,8 +96,8 @@ if __name__ == '__main__':
     net = net.to(device)
 
     # testing begin
-    for i in range(100):
-        image_path = "./img/sample.jpg"
+    for i in range(50):
+        image_path = "./img/sample3.jpg"
 
         img_raw = cv2.imread(image_path, cv2.IMREAD_COLOR)
         img = np.float32(img_raw)
@@ -139,6 +139,7 @@ if __name__ == '__main__':
         boxes = boxes * scale / resize
         boxes = boxes.cpu().numpy()
         scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
+        scores_mask = conf.squeeze(0).data.cpu().numpy()[:, 2]
         landms = decode_landm(landms.data.squeeze(0), prior_data, cfg['variance'])
         scale1 = torch.Tensor([img.shape[3], img.shape[2], img.shape[3], img.shape[2],
                                img.shape[3], img.shape[2], img.shape[3], img.shape[2],
@@ -148,19 +149,23 @@ if __name__ == '__main__':
         landms = landms.cpu().numpy()
 
         # ignore low scores
-        inds = np.where(scores > args.confidence_threshold)[0]
+        inds = np.unique(np.concatenate((np.where(scores > args.confidence_threshold)[0], np.where(scores_mask > args.confidence_threshold)[0])))
         boxes = boxes[inds]
         landms = landms[inds]
         scores = scores[inds]
-
+        scores_mask = scores_mask[inds]
+        _mask = np.greater(scores_mask, scores)
+        scores = scores_mask*_mask + scores*(~_mask)
+        _cls = _mask + 1
         # keep top-K before NMS
         order = scores.argsort()[::-1][:args.top_k]
         boxes = boxes[order]
         landms = landms[order]
         scores = scores[order]
+        _cls = _cls[order]
 
         # do NMS
-        dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=False)
+        dets = np.hstack((boxes, scores[:, np.newaxis], _cls[:, np.newaxis])).astype(np.float32, copy=False)
         keep = py_cpu_nms(dets, args.nms_threshold)
         # keep = nms(dets, args.nms_threshold,force_cpu=args.cpu)
         dets = dets[keep, :]
@@ -178,21 +183,21 @@ if __name__ == '__main__':
                 if b[4] < args.vis_thres:
                     continue
                 text = "{:.4f}".format(b[4])
+                color = (0, 0, 255) if b[5]==1 else (0, 255, 0)
                 b = list(map(int, b))
-                cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 2)
+                cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), color, 2)
                 cx = b[0]
                 cy = b[1] + 12
                 cv2.putText(img_raw, text, (cx, cy),
                             cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
 
                 # landms
-                cv2.circle(img_raw, (b[5], b[6]), 1, (0, 0, 255), 4)
-                cv2.circle(img_raw, (b[7], b[8]), 1, (0, 255, 255), 4)
-                cv2.circle(img_raw, (b[9], b[10]), 1, (255, 0, 255), 4)
-                cv2.circle(img_raw, (b[11], b[12]), 1, (0, 255, 0), 4)
-                cv2.circle(img_raw, (b[13], b[14]), 1, (255, 0, 0), 4)
+                cv2.circle(img_raw, (b[6], b[7]), 1, (0, 0, 255), 4)
+                cv2.circle(img_raw, (b[8], b[9]), 1, (0, 255, 255), 4)
+                cv2.circle(img_raw, (b[10], b[11]), 1, (255, 0, 255), 4)
+                cv2.circle(img_raw, (b[12], b[13]), 1, (0, 255, 0), 4)
+                cv2.circle(img_raw, (b[14], b[15]), 1, (255, 0, 0), 4)
             # save image
-
             name = "test.jpg"
             cv2.imwrite(name, img_raw)
 

@@ -30,6 +30,9 @@ parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for S
 parser.add_argument('--save_folder', default='./weights/', help='Location to save checkpoint models')
 parser.add_argument('--cpu', action='store_true')
 parser.add_argument('--freeze_backbone', action='store_true')
+parser.add_argument('--freeze_bbox', action='store_true')
+parser.add_argument('--freeze_landmarks', action='store_true')
+parser.add_argument('--freeze_class', action='store_true')
 parser.add_argument('--load_from_pretrained', action='store_true')
 
 args = parser.parse_args()
@@ -99,7 +102,7 @@ else:
 cudnn.benchmark = True
 
 optimizer = optim.SGD(net.parameters(), lr=initial_lr, momentum=momentum, weight_decay=weight_decay)
-criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, 3, 0.35, False)
+criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, 3, 0.35, False, args)
 
 priorbox = PriorBox(cfg, image_size=(img_dim, img_dim))
 with torch.no_grad():
@@ -108,7 +111,15 @@ with torch.no_grad():
 
 def freeze_backbone(net):
     for i, child in enumerate(net.children()):
-        if i in range(5):
+        # if i in range(5):
+        freeze = [0,1,2,3,4]
+        if args.freeze_landmarks:
+            freeze.append(7)
+        if args.freeze_bbox:
+            freeze.append(6)
+        if args.freeze_class:
+            freeze.append(5)
+        if i in freeze:
             for p in child.parameters():
                 p.require_grad = False
                 p.requires_grad = False

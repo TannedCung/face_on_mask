@@ -31,7 +31,7 @@ class MultiBoxLoss(nn.Module):
         See: https://arxiv.org/pdf/1512.02325.pdf for more details.
     """
 
-    def __init__(self, num_classes, overlap_thresh, prior_for_matching, bkg_label, neg_mining, neg_pos, neg_overlap, encode_target):
+    def __init__(self, num_classes, overlap_thresh, prior_for_matching, bkg_label, neg_mining, neg_pos, neg_overlap, encode_target, args):
         super(MultiBoxLoss, self).__init__()
         self.num_classes = num_classes
         self.threshold = overlap_thresh
@@ -42,6 +42,7 @@ class MultiBoxLoss(nn.Module):
         self.negpos_ratio = neg_pos
         self.neg_overlap = neg_overlap
         self.variance = [0.1, 0.2]
+        self.args = args
 
     def forward(self, predictions, priors, targets):
         """Multibox Loss
@@ -121,8 +122,18 @@ class MultiBoxLoss(nn.Module):
 
         # Sum of losses: L(x,c,l,g) = (Lconf(x, c) + αLloc(x,l,g)) / N
         N = max(num_pos.data.sum().float(), 1)
-        loss_l /= N
-        loss_c /= N
-        loss_landm /= N1
+        if self.args.freeze_bbox:
+            loss_l *= 0
+        else:
+            loss_l /= N
+        if self.args.freeze_class:
+            loss_c *=0
+        else:
+            loss_c /= N
+        # loss_c *= 0
+        if self.args.freeze_landmarks:
+            loss_landm *=0
+        else:
+            loss_landm /= N1 
 
         return loss_l, loss_c, loss_landm
