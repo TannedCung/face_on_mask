@@ -34,6 +34,7 @@ parser.add_argument('--freeze_bbox', action='store_true')
 parser.add_argument('--freeze_landmarks', action='store_true')
 parser.add_argument('--freeze_class', action='store_true')
 parser.add_argument('--load_from_pretrained', action='store_true')
+parser.add_argument('--negpos_ratio', default=5, type=int, help='to determine neg and pos ratio')
 
 args = parser.parse_args()
 
@@ -102,7 +103,7 @@ else:
 cudnn.benchmark = True
 
 optimizer = optim.SGD(net.parameters(), lr=initial_lr, momentum=momentum, weight_decay=weight_decay)
-criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, 5, 0.35, False, args)
+criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, args.negpos_ratio, 0.35, False, args)
 
 priorbox = PriorBox(cfg, image_size=(img_dim, img_dim))
 with torch.no_grad():
