@@ -4,6 +4,15 @@ import random
 from utils.box_utils import matrix_iof
 
 
+def _resize(image, boxes, landm):
+    PRE_SCALES = [1.0, 0.6, 0.8, 1.0, 1,2, 1,5, 2]
+    scale = random.choice(PRE_SCALES)
+
+    image = cv2.resize(image, (0, 0), fx=scale, fy=scale)
+    boxes = np.asarray(boxes)*scale
+    landm = np.asarray(landm)*scale
+    return image, boxes, landm
+
 def _crop(image, boxes, labels, landm, img_dim):
     height, width, _ = image.shape
     pad_image_flag = True
@@ -217,6 +226,7 @@ class preproc(object):
         labels = targets[:, -1].copy()
         landm = targets[:, 4:-1].copy()
 
+        image, boxes, landm = _resize(image, boxes, landm)
         image_t, boxes_t, labels_t, landm_t, pad_image_flag = _crop(image, boxes, labels, landm, self.img_dim)
         image_t = _distort(image_t)
         image_t = _pad_to_square(image_t,self.rgb_means, pad_image_flag)
