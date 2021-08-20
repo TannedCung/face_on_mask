@@ -37,6 +37,8 @@ parser.add_argument('--load_from_pretrained', action='store_true')
 parser.add_argument('--negpos_ratio', default=7, type=int, help='to determine neg and pos ratio')
 
 args = parser.parse_args()
+print("[INFO]: Args")
+print(args)
 
 if not os.path.exists(args.save_folder):
     os.mkdir(args.save_folder)
