@@ -5,7 +5,7 @@ from utils.box_utils import matrix_iof
 
 
 def _resize(image, boxes, landm):
-    PRE_SCALES = [1.0, 0.6, 0.8, 1.0, 1,2, 1,5, 2]
+    PRE_SCALES = [1.0, 0.8, 1.0, 1.2, 1.5]
     scale = random.choice(PRE_SCALES)
 
     image = cv2.resize(image, (0, 0), fx=scale, fy=scale)
