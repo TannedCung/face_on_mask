@@ -10,7 +10,7 @@ cfg_mnet = {
     'batch_size': 32,
     'ngpu': 1,
     'epoch': 1000,
-    'decay1': 358,
+    'decay1': 388,
     'decay2': 408,
     'image_size': 300,
     'pretrain': False,
