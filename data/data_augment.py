@@ -114,9 +114,10 @@ def _distort(image):
 
         #hue distortion
         if random.randrange(2):
-            tmp = image[:, :, 0].astype(int) + random.randint(-51, 51)
-            tmp %= 180
-            image[:, :, 0] = tmp
+            # tmp = image[:, :, 0].astype(int) + random.randint(-51, 51)
+            # tmp %= 180
+            # image[:, :, 0] = tmp
+            _convert(image[:, :, 0], alpha=random.uniform(0.8, 1.2))
 
         image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
