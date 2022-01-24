@@ -26,12 +26,14 @@ class WiderFaceDetection(data.Dataset):
                         labels_copy = labels.copy()
                         self.words.append(labels_copy)
                         labels.clear()
-                    path = line[2:]
-                    if "part_masked" in txt_path:
-                        path = path.replace(".jpg", "p.jpg")
-                    elif "all_masked" in txt_path:
-                        path = path.replace(".jpg", "a.jpg")
-                    path = txt_path.replace('.txt','/') + path
+                    _path = line[2:]
+                    # if "part_masked" in txt_path:
+                    #     path = path.replace(".jpg", "p.jpg")
+                    # elif "all_masked" in txt_path:
+                    #     path = path.replace(".jpg", "a.jpg")
+                    path = txt_path.replace('.txt','/') + _path
+                    if not os.path.isfile(path):
+                        path = txt_path.replace(txt_path.split("/")[-1], 'images/') + _path
                     self.imgs_path.append(path)
                 else:
                     line = line.split(' ')
