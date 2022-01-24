@@ -2,7 +2,17 @@ import cv2
 import numpy as np
 import random
 from utils.box_utils import matrix_iof
+from torchvision import transforms as T
 
+
+def _resize(image, boxes, landm):
+    PRE_SCALES = [1.0, 0.8, 1.0, 1.2, 1.5]
+    scale = random.choice(PRE_SCALES)
+
+    image = cv2.resize(image, (0, 0), fx=scale, fy=scale)
+    boxes = np.asarray(boxes)*scale
+    landm = np.asarray(landm)*scale
+    return image, boxes, landm
 
 def _crop(image, boxes, labels, landm, img_dim):
     height, width, _ = image.shape
@@ -89,7 +99,7 @@ def _distort(image):
 
         #brightness distortion
         if random.randrange(2):
-            _convert(image, beta=random.uniform(-32, 32))
+            _convert(image, beta=random.uniform(-78, 78))
 
         #contrast distortion
         if random.randrange(2):
@@ -100,12 +110,14 @@ def _distort(image):
         #saturation distortion
         if random.randrange(2):
             _convert(image[:, :, 1], alpha=random.uniform(0.5, 1.5))
+            # _convert(image[:, :, 2], alpha=random.uniform(0.5, 1.5))
 
         #hue distortion
         if random.randrange(2):
-            tmp = image[:, :, 0].astype(int) + random.randint(-18, 18)
-            tmp %= 180
-            image[:, :, 0] = tmp
+            # tmp = image[:, :, 0].astype(int) + random.randint(-51, 51)
+            # tmp %= 180
+            # image[:, :, 0] = tmp
+            _convert(image[:, :, 0], alpha=random.uniform(0.8, 1.2))
 
         image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
@@ -113,7 +125,7 @@ def _distort(image):
 
         #brightness distortion
         if random.randrange(2):
-            _convert(image, beta=random.uniform(-32, 32))
+            _convert(image, beta=random.uniform(-78, 78))
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -123,7 +135,7 @@ def _distort(image):
 
         #hue distortion
         if random.randrange(2):
-            tmp = image[:, :, 0].astype(int) + random.randint(-18, 18)
+            tmp = image[:, :, 0].astype(int) + random.randint(-51, 51)
             tmp %= 180
             image[:, :, 0] = tmp
 
@@ -203,6 +215,28 @@ def _resize_subtract_mean(image, insize, rgb_mean):
     image -= rgb_mean
     return image.transpose(2, 0, 1)
 
+# def brightness(img, low, high):
+#     value = random.uniform(low, high)
+#     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+#     hsv = np.array(hsv, dtype = np.float64)
+#     hsv[:,:,1] = hsv[:,:,1]*value
+#     hsv[:,:,1][hsv[:,:,1]>255]  = 255
+#     hsv[:,:,2] = hsv[:,:,2]*value 
+#     hsv[:,:,2][hsv[:,:,2]>255]  = 255
+#     hsv = np.array(hsv, dtype = np.uint8)
+#     img = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+#     return img
+
+# def hue(img, low, high):
+#     value = random.uniform(low, high)
+#     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+#     hsv = np.array(hsv, dtype = np.float64)
+#     hsv[:,:,0] = hsv[:,:,0]*value
+#     hsv[:,:,0][hsv[:,:,0]>255]  = 255
+#     hsv = np.array(hsv, dtype = np.uint8)
+#     img = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+#     return img
+
 
 class preproc(object):
 
@@ -217,7 +251,10 @@ class preproc(object):
         labels = targets[:, -1].copy()
         landm = targets[:, 4:-1].copy()
 
+        # image, boxes, landm = _resize(image, boxes, landm)
         image_t, boxes_t, labels_t, landm_t, pad_image_flag = _crop(image, boxes, labels, landm, self.img_dim)
+        # image_t = brightness(image_t, 0.6, 1.4)
+        # image_t = hue(image_t, 8, 1.2)
         image_t = _distort(image_t)
         image_t = _pad_to_square(image_t,self.rgb_means, pad_image_flag)
         image_t, boxes_t, landm_t = _mirror(image_t, boxes_t, landm_t)

@@ -71,7 +71,8 @@ class WiderFaceDetection(data.Dataset):
             annotation[0, 11] = label[14]  # l3_y
             annotation[0, 12] = label[16]  # l4_x
             annotation[0, 13] = label[17]  # l4_y
-            if (annotation[0, 4]<0):
+            # annotation[0, 14] = label[-1]  # l4_y
+            if (annotation[0, 4]<0 and label[-1]>0):
                 annotation[0, 14] = -1*label[-1]
             else:
                 annotation[0, 14] = label[-1]

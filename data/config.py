@@ -29,7 +29,7 @@ cfg_slim = {
     'gpu_train': True,
     'batch_size': 32,
     'ngpu': 1,
-    'epoch': 250,
+    'epoch': 1000,
     'decay1': 190,
     'decay2': 220,
     'image_size': 300
@@ -45,7 +45,7 @@ cfg_rfb = {
     'gpu_train': True,
     'batch_size': 32,
     'ngpu': 1,
-    'epoch': 250,
+    'epoch': 1000,
     'decay1': 190,
     'decay2': 220,
     'image_size': 300
